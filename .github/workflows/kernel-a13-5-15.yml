@@ -7,6 +7,33 @@ permissions:
 on:
   workflow_dispatch:
     inputs:
+      # 新增：版本选择下拉框
+      target_sub_level:
+        description: "选择要构建的内核子版本（sub_level）"
+        required: true
+        type: choice
+        options:
+          - "74"
+          - "78"
+          - "94"
+          - "104"
+          - "119"
+          - "123"
+          - "137"
+          - "144"
+          - "148"
+          - "149"
+          - "151"
+          - "153"
+          - "167"
+          - "170"
+          - "178"
+          - "180"
+          - "185"
+          - "189"
+          - "194"
+          - "X"
+        default: "180" # 默认选你常用的5.15.180
       kernelsu_variant:
         description: "KernelSU 变体"
         required: true
@@ -58,6 +85,9 @@ on:
         default: false
   workflow_call:
     inputs:
+      target_sub_level:
+        required: true
+        type: string
       kernelsu_variant:
         required: true
         type: string
@@ -91,19 +121,60 @@ on:
 
 jobs:
   build-kernels-a13-5-15:
-    name: "5.15.${{ matrix.sub_level }}-${{ matrix.os_patch_level }}"
+    name: "5.15.${{ inputs.target_sub_level }}-${{ matrix.os_patch_level }}"
     strategy:
       fail-fast: false
       matrix:
         include:
-          - sub_level: "180"
+          - target_sub_level: "74"
+            os_patch_level: "2023-01"
+          - target_sub_level: "78"
+            os_patch_level: "2023-03"
+          - target_sub_level: "94"
+            os_patch_level: "2023-05"
+          - target_sub_level: "104"
+            os_patch_level: "2023-07"
+          - target_sub_level: "119"
+            os_patch_level: "2023-09"
+          - target_sub_level: "123"
+            os_patch_level: "2023-11"
+          - target_sub_level: "137"
+            os_patch_level: "2024-01"
+          - target_sub_level: "144"
+            os_patch_level: "2024-03"
+          - target_sub_level: "148"
+            os_patch_level: "2024-05"
+          - target_sub_level: "149"
+            os_patch_level: "2024-07"
+          - target_sub_level: "151"
+            os_patch_level: "2024-08"
+          - target_sub_level: "153"
+            os_patch_level: "2024-09"
+          - target_sub_level: "167"
+            os_patch_level: "2024-11"
+          - target_sub_level: "170"
+            os_patch_level: "2025-01"
+          - target_sub_level: "178"
+            os_patch_level: "2025-03"
+          - target_sub_level: "180"
             os_patch_level: "2025-05"
+          - target_sub_level: "185"
+            os_patch_level: "2025-07"
+          - target_sub_level: "189"
+            os_patch_level: "2025-09"
+          - target_sub_level: "194"
+            os_patch_level: "2025-12"
+          - target_sub_level: "X"
+            os_patch_level: "lts"
+        # 只保留用户选择的版本
+        exclude:
+          - target_sub_level: ${{ format('!{0}', inputs.target_sub_level) }}
     uses: ./.github/workflows/build.yml
     secrets: inherit
     with:
       android_version: "android13"
       kernel_version: "5.15"
-      sub_level: ${{ matrix.sub_level }}
+      sub_level: ${{ inputs.target_sub_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
       ksu_variant: ${{ inputs.kernelsu_variant }}
       ksu_branch: ${{ inputs.kernelsu_branch }}
